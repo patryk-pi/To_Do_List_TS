@@ -46,7 +46,7 @@ class Task implements TaskInterface{
     description: string;
     plannedDate: string;
     active: boolean;
-    doneDate:  null | string;
+    doneDate: string | null;
 
     constructor(name: string, description: string, date: string) {
         this.name = name;
@@ -62,14 +62,17 @@ class App {
     doneTasks: Task[] = [];
 
     constructor() {
-        $taskForm.addEventListener('submit', e => {
-            e.preventDefault();
-            this.addNewTask();
-        });
+
+        if ($taskForm) {
+            $taskForm.addEventListener('submit', e => {
+                e.preventDefault();
+                this.addNewTask();
+            });
+        }
         this.setDateInput();
         this.renderTasks();
-        this.plannedTasks = [...JSON.parse(localStorage.getItem("tasks")).filter(task => task.active === true)];
-        this.doneTasks = [...JSON.parse(localStorage.getItem("tasks")).filter(task => task.active === false)];
+        this.plannedTasks = [...JSON.parse(localStorage.getItem("tasks")).filter((task: Task) => task.active)];
+        this.doneTasks = [...JSON.parse(localStorage.getItem("tasks")).filter((task: Task) => task.active)];
         console.log(this.plannedTasks);
     }
 
@@ -78,7 +81,7 @@ class App {
 
         const taskName: string = $nameInput.value;
         const taskDesc: string = $descInput.value;
-        const taskDate: string = $dateInput.value;
+        const taskDate: string  = $dateInput.value;
 
         if (!taskName || !taskDate) {
             alert('Uzupełnij wszystkie pola!');
@@ -148,7 +151,10 @@ class App {
     }
 
     updatePlannedTasksList() {
-        $plannedTasks.innerHTML = '';
+
+        if ($plannedTasks) {
+            $plannedTasks.innerHTML = '';
+        }
 
         this.plannedTasks.filter(task => task.active).forEach((task, index) => {
             this.updateTaskHtml(task, index);
@@ -161,7 +167,9 @@ class App {
     }
 
     updateDoneTasksList() {
-        $doneTasks.innerHTML = '';
+        if ($doneTasks) {
+            $doneTasks.innerHTML = '';
+        }
 
         this.doneTasks.filter(task => !task.active).forEach((task, index) => {
             this.updateTaskHtml(task, index);
@@ -207,7 +215,7 @@ class App {
     renderTasks() {
         const allTasks = JSON.parse(localStorage.getItem("tasks"));
 
-        allTasks.forEach(task => {
+        allTasks.forEach((task: Task) => {
             this.plannedTasks.push(task);
         })
 
@@ -264,7 +272,7 @@ class App {
                 </div>
             </div>`
 
-        active === true ? $plannedTasks.insertAdjacentHTML('beforeend', html) : $doneTasks.insertAdjacentHTML('beforeend', html);
+        active ? $plannedTasks?.insertAdjacentHTML('beforeend', html) : $doneTasks?.insertAdjacentHTML('beforeend', html);
     }
 
     updateTasksList() {
@@ -278,12 +286,13 @@ class App {
     // TASKS ACTIONS
 
     changeActiveStatus(task: Task) {
-        task.active === true ? task.active = false : task.active = true;
+        task.active ? task.active = false : task.active = true;
     }
+
 
     markTaskAsDone(event) {
 
-        const dataId = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id')
+        const dataId = +event.target.parentElement?.parentElement?.previousElementSibling.getAttribute('data-id')
         this.changeActiveStatus(this.plannedTasks[dataId])
         this.plannedTasks[dataId].doneDate = this.formatDate();
         this.doneTasks.push(this.plannedTasks[dataId]);
@@ -291,15 +300,23 @@ class App {
         this.updateTasksList();
     }
 
-    markTaskAsUndone(event) {
+    markTaskAsUndone(event: MouseEvent) {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
 
-        const dataId = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id');
-        this.changeActiveStatus(this.doneTasks[dataId]);
-        this.doneTasks[dataId].doneDate = null;
-        this.plannedTasks.push(this.doneTasks[dataId]);
-        this.doneTasks.splice(dataId, 1)
+        const dataId = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
+        if (isNaN(dataId)) return;
+
+        const task = this.doneTasks[dataId];
+        if (!task) return;
+
+        this.changeActiveStatus(task);
+        task.doneDate = null;
+        this.plannedTasks.push(task);
+        this.doneTasks.splice(dataId, 1);
         this.updateTasksList();
     }
+
 
     deleteTask(event) {
         const dataId = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id');
@@ -320,32 +337,39 @@ class App {
         $nameInputEdit.value = this.plannedTasks[dataId].name
         $descInputEdit.value = this.plannedTasks[dataId].description
         $dateInputEdit.value = this.plannedTasks[dataId].plannedDate;
+
         const $closeBtn = document.querySelector('.close-modal');
 
-        $closeBtn.addEventListener('click', e=> {
-            e.preventDefault();
-            this.closeEditForm();
-        });
+        if ($closeBtn) {
+            $closeBtn.addEventListener('click', e => {
+                e.preventDefault();
+                this.closeEditForm();
+            });
+        }
 
-        $overlay.addEventListener('click', () => {
-            this.closeEditForm();
-        });
+        if ($overlay) {
+            $overlay.addEventListener('click', () => {
+                this.closeEditForm();
+            });
+        }
 
-        document.addEventListener("keydown", e=> {
-            if (e.key === "Escape" && (!$taskFormEdit.classList.contains("hidden"))) {
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape" && (!$taskFormEdit?.classList.contains("hidden"))) {
                 this.closeEditForm();
             }
         })
 
 
-        $taskFormEdit.addEventListener('submit', e => {
-            e.preventDefault();
-            this.submitEdition(dataId)
-            dataId = null;
-        })
+        if ($taskFormEdit) {
+            $taskFormEdit.addEventListener('submit', e => {
+                e.preventDefault();
+                this.submitEdition(dataId)
+                dataId = null;
+            })
+        }
     }
 
-    submitEdition(dataId: number | null ) {
+    submitEdition(dataId: number ) {
         const taskToEdit = this.plannedTasks[dataId];
         taskToEdit.name = $nameInputEdit.value;
         taskToEdit.description = $descInputEdit.value;
@@ -360,16 +384,16 @@ class App {
     };
 
     showEditForm() {
-        $taskFormEdit.classList.remove('hidden');
-        $taskFormEdit.classList.add('fade-in');
+        $taskFormEdit?.classList.remove('hidden');
+        $taskFormEdit?.classList.add('fade-in');
 
-        $overlay.classList.remove('hidden');
-        $overlay.classList.add('fade-in');
+        $overlay?.classList.remove('hidden');
+        $overlay?.classList.add('fade-in');
     }
 
     closeEditForm() {
-        $taskFormEdit.classList.add('hidden');
-        $overlay.classList.add('hidden');
+        $taskFormEdit?.classList.add('hidden');
+        $overlay?.classList.add('hidden');
     }
 
 
