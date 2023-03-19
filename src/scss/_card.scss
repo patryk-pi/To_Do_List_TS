@@ -1,0 +1,20 @@
+/*
+.card {
+
+  &-footer {
+    background: yellow;
+  }
+}*/
+
+.btn {
+
+  &-info {
+    &,
+    &:link,
+    &:visited,
+    &:hover,
+    &:active {
+      color: white;
+    }
+  }
+}
