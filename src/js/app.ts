@@ -1,12 +1,12 @@
 const $clock = document.getElementById('clock');
 const $btn = document.querySelector('.btn');
-const $nameInput = document.getElementById('task-name');
-const $descInput = document.getElementById('task-description')
-const $dateInput = document.getElementById('task-date');
+const $nameInput: HTMLInputElement = document.getElementById('task-name') as HTMLInputElement;
+const $descInput: HTMLInputElement = document.getElementById('task-description') as HTMLInputElement;
+const $dateInput: HTMLInputElement = document.getElementById('task-date') as HTMLInputElement;
 const $taskForm = document.getElementById('task-form');
-const $nameInputEdit = document.getElementById('task-name-edit');
-const $descInputEdit = document.getElementById('task-description-edit')
-const $dateInputEdit = document.getElementById('task-date-edit');
+const $nameInputEdit: HTMLInputElement  = document.getElementById('task-name-edit') as HTMLInputElement;
+const $descInputEdit: HTMLInputElement = document.getElementById('task-description-edit') as HTMLInputElement
+const $dateInputEdit: HTMLInputElement = document.getElementById('task-date-edit') as HTMLInputElement;
 const $taskFormEdit = document.querySelector('.edit-section');
 const $overlay = document.querySelector('.overlay');
 const $plannedTasks = document.getElementById('planned-tasks');
@@ -35,20 +35,20 @@ currentTime();*/
 interface TaskInterface {
     name: string;
     description: string;
-    plannedDate: string | Date;
+    plannedDate: string;
     active: boolean;
-    doneDate: Date | null | string;
+    doneDate:  null | string;
 }
 
 class Task implements TaskInterface{
 
     name: string;
     description: string;
-    plannedDate: string | Date;
+    plannedDate: string;
     active: boolean;
-    doneDate: Date | null | string;
+    doneDate:  null | string;
 
-    constructor(name: string, description: string, date: Date) {
+    constructor(name: string, description: string, date: string) {
         this.name = name;
         this.description = description;
         this.plannedDate = date;
@@ -78,7 +78,7 @@ class App {
 
         const taskName: string = $nameInput.value;
         const taskDesc: string = $descInput.value;
-        const taskDate: Date = $dateInput.value;
+        const taskDate: string = $dateInput.value;
 
         if (!taskName || !taskDate) {
             alert('Uzupełnij wszystkie pola!');
@@ -128,7 +128,7 @@ class App {
         const returnButtons = document.querySelectorAll('.btn-return');
 
         returnButtons.forEach(btn => {
-            btn.addEventListener('click', e => {
+            (btn as HTMLButtonElement).addEventListener('click', e => {
                 e.preventDefault()
                 this.markTaskAsUndone(e);
             })
@@ -136,10 +136,10 @@ class App {
     }
 
     addEditButtonListener() {
-        const editButtons = document.querySelectorAll('.btn-edit');
+        const editButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll('.btn-edit') as NodeListOf<HTMLButtonElement>;
 
         editButtons.forEach(btn => {
-            btn.addEventListener('click', e => {
+            (btn as HTMLButtonElement).addEventListener('click', e => {
                 e.preventDefault();
                 this.editTask(e);
                 btn.blur();
@@ -192,7 +192,7 @@ class App {
 
     saveTaskToLocalStorage(task: Task) {
         let dataFromLocalStorage = [];
-        if (localStorage.getItem('tasks') !== null) {
+        if (localStorage.getItem('tasks')) {
             dataFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
             dataFromLocalStorage.push(task);
             localStorage.setItem('tasks', JSON.stringify(dataFromLocalStorage))
@@ -220,7 +220,7 @@ class App {
 
     }
 
-    renderAllTasks(array: [], ifActive: boolean) {
+    renderAllTasks(array: Task[], ifActive: boolean) {
         array.filter(task => {
             return task.active === ifActive;
         }).forEach((task, i) => {
@@ -230,7 +230,7 @@ class App {
     }
 
 
-    updateTaskHtml(task: object, index: number) {
+    updateTaskHtml(task: Task, index: number) {
         const {name, description: desc, plannedDate, active, doneDate} = task
         const html = active === true ?
 
@@ -275,11 +275,9 @@ class App {
     }
 
 
-
-
     // TASKS ACTIONS
 
-    changeActiveStatus(task: object) {
+    changeActiveStatus(task: Task) {
         task.active === true ? task.active = false : task.active = true;
     }
 
@@ -316,7 +314,7 @@ class App {
     }
 
     editTask(event) {
-        let dataId = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id');
+        let dataId: number | null = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id');
 
         this.showEditForm();
         $nameInputEdit.value = this.plannedTasks[dataId].name
@@ -347,14 +345,14 @@ class App {
         })
     }
 
-    submitEdition(dataId: number | any) {
+    submitEdition(dataId: number | null ) {
         const taskToEdit = this.plannedTasks[dataId];
         taskToEdit.name = $nameInputEdit.value;
         taskToEdit.description = $descInputEdit.value;
-        taskToEdit.date = $dateInputEdit.value;
+        taskToEdit.plannedDate = $dateInputEdit.value;
 
 
-        this.plannedTasks[dataId] = new Task(taskToEdit.name, taskToEdit.description, taskToEdit.date);
+        this.plannedTasks[dataId] = new Task(taskToEdit.name, taskToEdit.description, taskToEdit.plannedDate);
         this.updateTasksList();
 
 
