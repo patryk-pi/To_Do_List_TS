@@ -32,14 +32,21 @@ const currentTime =() => {
 updateDate();
 currentTime();*/
 
+interface TaskInterface {
+    name: string;
+    description: string;
+    plannedDate: string | Date;
+    active: boolean;
+    doneDate: Date | null | string;
+}
 
-class Task {
+class Task implements TaskInterface{
 
     name: string;
     description: string;
-    plannedDate: Date;
+    plannedDate: string | Date;
     active: boolean;
-    doneDate: Date | null;
+    doneDate: Date | null | string;
 
     constructor(name: string, description: string, date: Date) {
         this.name = name;
@@ -51,8 +58,8 @@ class Task {
 }
 
 class App {
-    plannedTasks = [];
-    doneTasks = [];
+    plannedTasks: Task[] = [];
+    doneTasks: Task[] = [];
 
     constructor() {
         $taskForm.addEventListener('submit', e => {
@@ -69,9 +76,9 @@ class App {
 
     addNewTask() {
 
-        const taskName = $nameInput.value;
-        const taskDesc = $descInput.value;
-        const taskDate = $dateInput.value;
+        const taskName: string = $nameInput.value;
+        const taskDesc: string = $descInput.value;
+        const taskDate: Date = $dateInput.value;
 
         if (!taskName || !taskDate) {
             alert('Uzupełnij wszystkie pola!');
@@ -80,7 +87,7 @@ class App {
         const newTask = new Task(taskName, taskDesc, taskDate);
 
         let dataFormLocalStorage = [];
-        if (localStorage.getItem('tasks') !== null) {
+        if (localStorage.getItem('tasks')) {
             dataFormLocalStorage = JSON.parse(localStorage.getItem("tasks"));
         }
 
@@ -143,7 +150,7 @@ class App {
     updatePlannedTasksList() {
         $plannedTasks.innerHTML = '';
 
-        this.plannedTasks.filter(task => task.active === true).forEach((task, index) => {
+        this.plannedTasks.filter(task => task.active).forEach((task, index) => {
             this.updateTaskHtml(task, index);
         });
 
@@ -156,7 +163,7 @@ class App {
     updateDoneTasksList() {
         $doneTasks.innerHTML = '';
 
-        this.doneTasks.filter(task => task.active === false).forEach((task, index) => {
+        this.doneTasks.filter(task => !task.active).forEach((task, index) => {
             this.updateTaskHtml(task, index);
         });
 
@@ -183,7 +190,7 @@ class App {
 
     // LOCAL STORAGE
 
-    saveTaskToLocalStorage(task) {
+    saveTaskToLocalStorage(task: Task) {
         let dataFromLocalStorage = [];
         if (localStorage.getItem('tasks') !== null) {
             dataFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
@@ -213,7 +220,7 @@ class App {
 
     }
 
-    renderAllTasks(array, ifActive) {
+    renderAllTasks(array: [], ifActive: boolean) {
         array.filter(task => {
             return task.active === ifActive;
         }).forEach((task, i) => {
@@ -223,7 +230,7 @@ class App {
     }
 
 
-    updateTaskHtml(task, index) {
+    updateTaskHtml(task: object, index: number) {
         const {name, description: desc, plannedDate, active, doneDate} = task
         const html = active === true ?
 
@@ -272,7 +279,7 @@ class App {
 
     // TASKS ACTIONS
 
-    changeActiveStatus(task) {
+    changeActiveStatus(task: object) {
         task.active === true ? task.active = false : task.active = true;
     }
 
@@ -316,7 +323,6 @@ class App {
         $descInputEdit.value = this.plannedTasks[dataId].description
         $dateInputEdit.value = this.plannedTasks[dataId].plannedDate;
         const $closeBtn = document.querySelector('.close-modal');
-        console.log(this.plannedTasks[dataId])
 
         $closeBtn.addEventListener('click', e=> {
             e.preventDefault();
@@ -341,7 +347,7 @@ class App {
         })
     }
 
-    submitEdition(dataId) {
+    submitEdition(dataId: number | any) {
         const taskToEdit = this.plannedTasks[dataId];
         taskToEdit.name = $nameInputEdit.value;
         taskToEdit.description = $descInputEdit.value;

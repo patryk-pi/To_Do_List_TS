@@ -20,24 +20,6 @@ var $taskFormEdit = document.querySelector('.edit-section');
 var $overlay = document.querySelector('.overlay');
 var $plannedTasks = document.getElementById('planned-tasks');
 var $doneTasks = document.getElementById('done-tasks');
-/*
-// CLOCK
-const updateDate = () => {
-    const interval = setInterval(() => {
-        currentTime();
-    }, 1000)
-}
-
-const currentTime =() => {
-    $clock.innerHTML ='';
-    const date = (new Date());
-    const html = `<p class="lead">${new Date().toLocaleDateString()}</p>
-                    <p class="lead">${new Date().toLocaleTimeString()}</p>`
-    $clock.insertAdjacentHTML('beforeend', html);
-}
-
-updateDate();
-currentTime();*/
 var Task = /** @class */ (function () {
     function Task(name, description, date) {
         this.name = name;
@@ -73,7 +55,7 @@ var App = /** @class */ (function () {
         }
         var newTask = new Task(taskName, taskDesc, taskDate);
         var dataFormLocalStorage = [];
-        if (localStorage.getItem('tasks') !== null) {
+        if (localStorage.getItem('tasks')) {
             dataFormLocalStorage = JSON.parse(localStorage.getItem("tasks"));
         }
         this.plannedTasks.push(newTask);
@@ -128,7 +110,7 @@ var App = /** @class */ (function () {
     App.prototype.updatePlannedTasksList = function () {
         var _this = this;
         $plannedTasks.innerHTML = '';
-        this.plannedTasks.filter(function (task) { return task.active === true; }).forEach(function (task, index) {
+        this.plannedTasks.filter(function (task) { return task.active; }).forEach(function (task, index) {
             _this.updateTaskHtml(task, index);
         });
         this.addDoneButtonListeners();
@@ -139,7 +121,7 @@ var App = /** @class */ (function () {
     App.prototype.updateDoneTasksList = function () {
         var _this = this;
         $doneTasks.innerHTML = '';
-        this.doneTasks.filter(function (task) { return task.active === false; }).forEach(function (task, index) {
+        this.doneTasks.filter(function (task) { return !task.active; }).forEach(function (task, index) {
             _this.updateTaskHtml(task, index);
         });
     };
@@ -246,7 +228,6 @@ var App = /** @class */ (function () {
         $descInputEdit.value = this.plannedTasks[dataId].description;
         $dateInputEdit.value = this.plannedTasks[dataId].plannedDate;
         var $closeBtn = document.querySelector('.close-modal');
-        console.log(this.plannedTasks[dataId]);
         $closeBtn.addEventListener('click', function (e) {
             e.preventDefault();
             _this.closeEditForm();
