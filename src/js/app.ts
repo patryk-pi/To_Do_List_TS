@@ -37,7 +37,7 @@ interface TaskInterface {
     description: string;
     plannedDate: string;
     active: boolean;
-    doneDate:  null | string;
+    doneDate: string | null;
 }
 
 class Task implements TaskInterface{
@@ -71,8 +71,8 @@ class App {
         }
         this.setDateInput();
         this.renderTasks();
-        this.plannedTasks = [...JSON.parse(localStorage.getItem("tasks")).filter((task: Task) => task.active)];
-        this.doneTasks = [...JSON.parse(localStorage.getItem("tasks")).filter((task: Task) => task.active)];
+        this.plannedTasks = [...JSON.parse(localStorage.getItem("tasks")  || '{}').filter((task: Task) => task.active)];
+        this.doneTasks = [...JSON.parse(localStorage.getItem("tasks")  || '{}').filter((task: Task) => !task.active)];
         console.log(this.plannedTasks);
     }
 
@@ -81,7 +81,7 @@ class App {
 
         const taskName: string = $nameInput.value;
         const taskDesc: string = $descInput.value;
-        const taskDate: string  = $dateInput.value;
+        const taskDate: string | null = $dateInput.value;
 
         if (!taskName || !taskDate) {
             alert('Uzupełnij wszystkie pola!');
@@ -91,7 +91,7 @@ class App {
 
         let dataFormLocalStorage = [];
         if (localStorage.getItem('tasks')) {
-            dataFormLocalStorage = JSON.parse(localStorage.getItem("tasks"));
+            dataFormLocalStorage = JSON.parse(localStorage.getItem("tasks") || '{}');
         }
 
         this.plannedTasks.push(newTask);
@@ -109,7 +109,7 @@ class App {
         const doneButtons = document.querySelectorAll('.btn-done');
 
         doneButtons.forEach(btn => {
-            btn.addEventListener('click', e => {
+            (btn as HTMLButtonElement).addEventListener('click', (e: MouseEvent) => {
                 e.preventDefault()
                 this.markTaskAsDone(e);
             })
@@ -120,7 +120,7 @@ class App {
         const deleteButtons = document.querySelectorAll('.btn-delete');
 
         deleteButtons.forEach(btn => {
-            btn.addEventListener('click', e => {
+            (btn as HTMLButtonElement).addEventListener('click', e => {
                 e.preventDefault()
                 this.deleteTask(e)
             })
@@ -180,7 +180,7 @@ class App {
 
     // DATES
 
-    padTo2Digits(num) {
+    padTo2Digits(num: number) {
         return num.toString().padStart(2, '0');
     }
 
@@ -201,9 +201,9 @@ class App {
     saveTaskToLocalStorage(task: Task) {
         let dataFromLocalStorage = [];
         if (localStorage.getItem('tasks')) {
-            dataFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
+            dataFromLocalStorage = JSON.parse(localStorage.getItem('tasks')  || '{}');
             dataFromLocalStorage.push(task);
-            localStorage.setItem('tasks', JSON.stringify(dataFromLocalStorage))
+            localStorage.setItem('tasks', JSON.stringify(dataFromLocalStorage)  )
         } else {
             dataFromLocalStorage.push(task);
             localStorage.setItem('tasks', JSON.stringify(dataFromLocalStorage))
@@ -213,7 +213,7 @@ class App {
     /////////////////
 
     renderTasks() {
-        const allTasks = JSON.parse(localStorage.getItem("tasks"));
+        const allTasks = JSON.parse(localStorage.getItem("tasks")  || '{}');
 
         allTasks.forEach((task: Task) => {
             this.plannedTasks.push(task);
@@ -240,7 +240,7 @@ class App {
 
     updateTaskHtml(task: Task, index: number) {
         const {name, description: desc, plannedDate, active, doneDate} = task
-        const html = active === true ?
+        const html = active ?
 
             `<div class="card mt-5">
                 <div class="card-body" data-id="${index}">
@@ -290,9 +290,13 @@ class App {
     }
 
 
-    markTaskAsDone(event) {
+    markTaskAsDone(event: MouseEvent) {
 
-        const dataId = +event.target.parentElement?.parentElement?.previousElementSibling.getAttribute('data-id')
+
+        const target = event.target as HTMLElement | null;
+        if (!target) return
+
+        const dataId = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
         this.changeActiveStatus(this.plannedTasks[dataId])
         this.plannedTasks[dataId].doneDate = this.formatDate();
         this.doneTasks.push(this.plannedTasks[dataId]);
@@ -305,10 +309,9 @@ class App {
         if (!target) return;
 
         const dataId = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
-        if (isNaN(dataId)) return;
 
         const task = this.doneTasks[dataId];
-        if (!task) return;
+
 
         this.changeActiveStatus(task);
         task.doneDate = null;
@@ -318,9 +321,12 @@ class App {
     }
 
 
-    deleteTask(event) {
-        const dataId = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id');
-        const targetArray = String(event.target.parentElement.parentElement.parentElement.parentElement.id);
+    deleteTask(event: MouseEvent) {
+        const target = event.target as HTMLElement | null;
+        if (!target) return
+
+        const dataId = +(target.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
+        const targetArray = String(target.parentElement?.parentElement?.parentElement?.parentElement?.id);
         if (targetArray === 'planned-tasks') {
             this.plannedTasks.splice(dataId, 1);
             this.updateTasksList();
@@ -330,8 +336,12 @@ class App {
         }
     }
 
-    editTask(event) {
-        let dataId: number | null = +event.target.parentElement.parentElement.previousElementSibling.getAttribute('data-id');
+    editTask(event: MouseEvent) {
+
+        const target = event.target as HTMLElement;
+        if (!target) return
+
+        let dataId: number = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
 
         this.showEditForm();
         $nameInputEdit.value = this.plannedTasks[dataId].name
@@ -364,7 +374,7 @@ class App {
             $taskFormEdit.addEventListener('submit', e => {
                 e.preventDefault();
                 this.submitEdition(dataId)
-                dataId = null;
+                dataId = 0;
             })
         }
     }
