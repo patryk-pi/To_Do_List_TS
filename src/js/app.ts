@@ -1,36 +1,28 @@
-const $clock = document.getElementById('clock');
-const $btn = document.querySelector('.btn');
-const $nameInput: HTMLInputElement = document.getElementById('task-name') as HTMLInputElement;
-const $descInput: HTMLInputElement = document.getElementById('task-description') as HTMLInputElement;
-const $dateInput: HTMLInputElement = document.getElementById('task-date') as HTMLInputElement;
-const $taskForm = document.getElementById('task-form');
-const $nameInputEdit: HTMLInputElement  = document.getElementById('task-name-edit') as HTMLInputElement;
-const $descInputEdit: HTMLInputElement = document.getElementById('task-description-edit') as HTMLInputElement
-const $dateInputEdit: HTMLInputElement = document.getElementById('task-date-edit') as HTMLInputElement;
-const $taskFormEdit = document.querySelector('.edit-section');
-const $overlay = document.querySelector('.overlay');
-const $plannedTasks = document.getElementById('planned-tasks');
-const $doneTasks = document.getElementById('done-tasks');
-
-
-/*
-// CLOCK
-const updateDate = () => {
-    const interval = setInterval(() => {
-        currentTime();
-    }, 1000)
-}
-
-const currentTime =() => {
-    $clock.innerHTML ='';
-    const date = (new Date());
-    const html = `<p class="lead">${new Date().toLocaleDateString()}</p>
-                    <p class="lead">${new Date().toLocaleTimeString()}</p>`
-    $clock.insertAdjacentHTML('beforeend', html);
-}
-
-updateDate();
-currentTime();*/
+const $clock = document.getElementById("clock");
+const $btn = document.querySelector(".btn");
+const $nameInput: HTMLInputElement = document.getElementById(
+    "task-name"
+) as HTMLInputElement;
+const $descInput: HTMLInputElement = document.getElementById(
+    "task-description"
+) as HTMLInputElement;
+const $dateInput: HTMLInputElement = document.getElementById(
+    "task-date"
+) as HTMLInputElement;
+const $taskForm = document.getElementById("task-form");
+const $nameInputEdit: HTMLInputElement = document.getElementById(
+    "task-name-edit"
+) as HTMLInputElement;
+const $descInputEdit: HTMLInputElement = document.getElementById(
+    "task-description-edit"
+) as HTMLInputElement;
+const $dateInputEdit: HTMLInputElement = document.getElementById(
+    "task-date-edit"
+) as HTMLInputElement;
+const $taskFormEdit = document.querySelector(".edit-section");
+const $overlay = document.querySelector(".overlay");
+const $plannedTasks = document.getElementById("planned-tasks");
+const $doneTasks = document.getElementById("done-tasks");
 
 interface TaskInterface {
     name: string;
@@ -40,8 +32,7 @@ interface TaskInterface {
     doneDate: string | null;
 }
 
-class Task implements TaskInterface{
-
+class Task implements TaskInterface {
     name: string;
     description: string;
     plannedDate: string;
@@ -62,103 +53,117 @@ class App {
     doneTasks: Task[] = [];
 
     constructor() {
-
         if ($taskForm) {
-            $taskForm.addEventListener('submit', e => {
+            $taskForm.addEventListener("submit", (e) => {
                 e.preventDefault();
                 this.addNewTask();
             });
         }
         this.setDateInput();
         this.renderTasks();
-        this.plannedTasks = [...JSON.parse(localStorage.getItem("tasks")  || '{}').filter((task: Task) => task.active)];
-        this.doneTasks = [...JSON.parse(localStorage.getItem("tasks")  || '{}').filter((task: Task) => !task.active)];
+        this.plannedTasks = [
+            ...JSON.parse(localStorage.getItem("tasks") || "{}").filter(
+                (task: Task) => task.active
+            ),
+        ];
+        this.doneTasks = [
+            ...JSON.parse(localStorage.getItem("tasks") || "{}").filter(
+                (task: Task) => !task.active
+            ),
+        ];
         console.log(this.plannedTasks);
     }
 
-
     addNewTask() {
-
         const taskName: string = $nameInput.value;
         const taskDesc: string = $descInput.value;
         const taskDate: string | null = $dateInput.value;
 
         if (!taskName || !taskDate) {
-            alert('Uzupełnij wszystkie pola!');
+            alert("Uzupełnij wszystkie pola!");
             return;
         }
         const newTask = new Task(taskName, taskDesc, taskDate);
 
         let dataFormLocalStorage = [];
-        if (localStorage.getItem('tasks')) {
-            dataFormLocalStorage = JSON.parse(localStorage.getItem("tasks") || '{}');
+        if (localStorage.getItem("tasks")) {
+            dataFormLocalStorage = JSON.parse(
+                localStorage.getItem("tasks") || "{}"
+            );
         }
 
         this.plannedTasks.push(newTask);
         console.log(newTask);
-        this.saveTaskToLocalStorage(newTask)
+        this.saveTaskToLocalStorage(newTask);
         this.updatePlannedTasksList();
 
-        $nameInput.value = $descInput.value = '';
+        $nameInput.value = $descInput.value = "";
         this.setDateInput();
     }
 
     // EVENT LISTENERS
 
     addDoneButtonListeners() {
-        const doneButtons = document.querySelectorAll('.btn-done');
+        const doneButtons = document.querySelectorAll(".btn-done");
 
-        doneButtons.forEach(btn => {
-            (btn as HTMLButtonElement).addEventListener('click', (e: MouseEvent) => {
-                e.preventDefault()
-                this.markTaskAsDone(e);
-            })
-        })
+        doneButtons.forEach((btn) => {
+            (btn as HTMLButtonElement).addEventListener(
+                "click",
+                (e: MouseEvent) => {
+                    e.preventDefault();
+                    this.markTaskAsDone(e);
+                }
+            );
+        });
     }
 
     addDeleteButtonListener() {
-        const deleteButtons = document.querySelectorAll('.btn-delete');
+        const deleteButtons = document.querySelectorAll(".btn-delete");
 
-        deleteButtons.forEach(btn => {
-            (btn as HTMLButtonElement).addEventListener('click', e => {
-                e.preventDefault()
-                this.deleteTask(e)
-            })
+        deleteButtons.forEach((btn) => {
+            (btn as HTMLButtonElement).addEventListener("click", (e) => {
+                e.preventDefault();
+                this.deleteTask(e);
+            });
         });
     }
 
     addReturnButtonListener() {
-        const returnButtons = document.querySelectorAll('.btn-return');
+        const returnButtons = document.querySelectorAll(".btn-return");
 
-        returnButtons.forEach(btn => {
-            (btn as HTMLButtonElement).addEventListener('click', e => {
-                e.preventDefault()
+        returnButtons.forEach((btn) => {
+            (btn as HTMLButtonElement).addEventListener("click", (e) => {
+                e.preventDefault();
                 this.markTaskAsUndone(e);
-            })
-        })
+            });
+        });
     }
 
     addEditButtonListener() {
-        const editButtons: NodeListOf<HTMLButtonElement> = document.querySelectorAll('.btn-edit') as NodeListOf<HTMLButtonElement>;
+        const editButtons: NodeListOf<HTMLButtonElement> =
+            document.querySelectorAll(
+                ".btn-edit"
+            ) as NodeListOf<HTMLButtonElement>;
 
-        editButtons.forEach(btn => {
-            (btn as HTMLButtonElement).addEventListener('click', e => {
+        editButtons.forEach((btn) => {
+            (btn as HTMLButtonElement).addEventListener("click", (e) => {
                 e.preventDefault();
                 this.editTask(e);
                 btn.blur();
-            })
-        })
+            });
+        });
     }
 
     updatePlannedTasksList() {
-
         if ($plannedTasks) {
-            $plannedTasks.innerHTML = '';
+            $plannedTasks.innerHTML = "";
         }
 
-        this.plannedTasks.filter(task => task.active).forEach((task, index) => {
-            this.updateTaskHtml(task, index);
-        });
+        this.plannedTasks
+            .filter((task) => task.active)
+            .forEach((task, index) => {
+                this.updateTaskHtml(task, index);
+            });
 
         this.addDoneButtonListeners();
         this.addDeleteButtonListener();
@@ -168,20 +173,20 @@ class App {
 
     updateDoneTasksList() {
         if ($doneTasks) {
-            $doneTasks.innerHTML = '';
+            $doneTasks.innerHTML = "";
         }
 
-        this.doneTasks.filter(task => !task.active).forEach((task, index) => {
-            this.updateTaskHtml(task, index);
-        });
-
+        this.doneTasks
+            .filter((task) => !task.active)
+            .forEach((task, index) => {
+                this.updateTaskHtml(task, index);
+            });
     }
-
 
     // DATES
 
     padTo2Digits(num: number) {
-        return num.toString().padStart(2, '0');
+        return num.toString().padStart(2, "0");
     }
 
     formatDate(date = new Date()) {
@@ -189,7 +194,7 @@ class App {
             date.getFullYear(),
             this.padTo2Digits(date.getMonth() + 1),
             this.padTo2Digits(date.getDate()),
-        ].join('-');
+        ].join("-");
     }
 
     setDateInput() {
@@ -200,24 +205,26 @@ class App {
 
     saveTaskToLocalStorage(task: Task) {
         let dataFromLocalStorage = [];
-        if (localStorage.getItem('tasks')) {
-            dataFromLocalStorage = JSON.parse(localStorage.getItem('tasks')  || '{}');
+        if (localStorage.getItem("tasks")) {
+            dataFromLocalStorage = JSON.parse(
+                localStorage.getItem("tasks") || "{}"
+            );
             dataFromLocalStorage.push(task);
-            localStorage.setItem('tasks', JSON.stringify(dataFromLocalStorage)  )
+            localStorage.setItem("tasks", JSON.stringify(dataFromLocalStorage));
         } else {
             dataFromLocalStorage.push(task);
-            localStorage.setItem('tasks', JSON.stringify(dataFromLocalStorage))
+            localStorage.setItem("tasks", JSON.stringify(dataFromLocalStorage));
         }
     }
 
     /////////////////
 
     renderTasks() {
-        const allTasks = JSON.parse(localStorage.getItem("tasks")  || '{}');
+        const allTasks = JSON.parse(localStorage.getItem("tasks") || "{}");
 
         allTasks.forEach((task: Task) => {
             this.plannedTasks.push(task);
-        })
+        });
 
         this.renderAllTasks(allTasks, false);
         this.renderAllTasks(allTasks, true);
@@ -225,24 +232,22 @@ class App {
         this.addDeleteButtonListener();
         this.addReturnButtonListener();
         this.addEditButtonListener();
-
     }
 
     renderAllTasks(array: Task[], ifActive: boolean) {
-        array.filter(task => {
-            return task.active === ifActive;
-        }).forEach((task, i) => {
+        array
+            .filter((task) => {
+                return task.active === ifActive;
+            })
+            .forEach((task, i) => {
                 this.updateTaskHtml(task, i);
-            }
-        );
+            });
     }
 
-
     updateTaskHtml(task: Task, index: number) {
-        const {name, description: desc, plannedDate, active, doneDate} = task
-        const html = active ?
-
-            `<div class="card mt-5">
+        const { name, description: desc, plannedDate, active, doneDate } = task;
+        const html = active
+            ? `<div class="card mt-5">
                 <div class="card-body" data-id="${index}">
                     <h5 class="card-title">${name}</h5>
                     <p class="card-text">${desc} </p>
@@ -256,9 +261,8 @@ class App {
                         <button type="button" class="btn btn-outline-danger btn-delete">Usuń</button>
                     </div> 
                 </div>
-            </div>` :
-
-            `<div class="card mt-5">
+            </div>`
+            : `<div class="card mt-5">
                 <div class="card-body" data-id="${index}">
                     <h5 class="card-title">${name}</h5>
                     <p class="card-text">${desc} </p>
@@ -270,37 +274,39 @@ class App {
                         <button type="button" class="btn btn-outline-danger btn-delete">Usuń</button>
                     </div>
                 </div>
-            </div>`
+            </div>`;
 
-        active ? $plannedTasks?.insertAdjacentHTML('beforeend', html) : $doneTasks?.insertAdjacentHTML('beforeend', html);
+        active
+            ? $plannedTasks?.insertAdjacentHTML("beforeend", html)
+            : $doneTasks?.insertAdjacentHTML("beforeend", html);
     }
 
     updateTasksList() {
         this.updateDoneTasksList();
         this.updatePlannedTasksList();
-        const allTasks = [...this.plannedTasks, ...this.doneTasks]
-        localStorage.setItem('tasks', JSON.stringify(allTasks));
+        const allTasks = [...this.plannedTasks, ...this.doneTasks];
+        localStorage.setItem("tasks", JSON.stringify(allTasks));
     }
-
 
     // TASKS ACTIONS
 
     changeActiveStatus(task: Task) {
-        task.active ? task.active = false : task.active = true;
+        task.active ? (task.active = false) : (task.active = true);
     }
 
-
     markTaskAsDone(event: MouseEvent) {
-
-
         const target = event.target as HTMLElement | null;
-        if (!target) return
+        if (!target) return;
 
-        const dataId = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
-        this.changeActiveStatus(this.plannedTasks[dataId])
+        const dataId = +(
+            target?.parentElement?.parentElement?.previousElementSibling?.getAttribute(
+                "data-id"
+            ) || ""
+        );
+        this.changeActiveStatus(this.plannedTasks[dataId]);
         this.plannedTasks[dataId].doneDate = this.formatDate();
         this.doneTasks.push(this.plannedTasks[dataId]);
-        this.plannedTasks.splice(dataId, 1)
+        this.plannedTasks.splice(dataId, 1);
         this.updateTasksList();
     }
 
@@ -308,10 +314,13 @@ class App {
         const target = event.target as HTMLElement | null;
         if (!target) return;
 
-        const dataId = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
+        const dataId = +(
+            target?.parentElement?.parentElement?.previousElementSibling?.getAttribute(
+                "data-id"
+            ) || ""
+        );
 
         const task = this.doneTasks[dataId];
-
 
         this.changeActiveStatus(task);
         task.doneDate = null;
@@ -320,14 +329,20 @@ class App {
         this.updateTasksList();
     }
 
-
     deleteTask(event: MouseEvent) {
         const target = event.target as HTMLElement | null;
-        if (!target) return
+        if (!target) return;
 
-        const dataId = +(target.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
-        const targetArray = String(target.parentElement?.parentElement?.parentElement?.parentElement?.id);
-        if (targetArray === 'planned-tasks') {
+        const dataId = +(
+            target.parentElement?.parentElement?.previousElementSibling?.getAttribute(
+                "data-id"
+            ) || ""
+        );
+        const targetArray = String(
+            target.parentElement?.parentElement?.parentElement?.parentElement
+                ?.id
+        );
+        if (targetArray === "planned-tasks") {
             this.plannedTasks.splice(dataId, 1);
             this.updateTasksList();
         } else {
@@ -337,80 +352,81 @@ class App {
     }
 
     editTask(event: MouseEvent) {
-
         const target = event.target as HTMLElement;
-        if (!target) return
+        if (!target) return;
 
-        let dataId: number = +(target?.parentElement?.parentElement?.previousElementSibling?.getAttribute('data-id') || '');
+        let dataId: number = +(
+            target?.parentElement?.parentElement?.previousElementSibling?.getAttribute(
+                "data-id"
+            ) || ""
+        );
 
         this.showEditForm();
-        $nameInputEdit.value = this.plannedTasks[dataId].name
-        $descInputEdit.value = this.plannedTasks[dataId].description
+        $nameInputEdit.value = this.plannedTasks[dataId].name;
+        $descInputEdit.value = this.plannedTasks[dataId].description;
         $dateInputEdit.value = this.plannedTasks[dataId].plannedDate;
 
-        const $closeBtn = document.querySelector('.close-modal');
+        const $closeBtn = document.querySelector(".close-modal");
 
         if ($closeBtn) {
-            $closeBtn.addEventListener('click', e => {
+            $closeBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 this.closeEditForm();
             });
         }
 
         if ($overlay) {
-            $overlay.addEventListener('click', () => {
+            $overlay.addEventListener("click", () => {
                 this.closeEditForm();
             });
         }
 
-        document.addEventListener("keydown", e => {
-            if (e.key === "Escape" && (!$taskFormEdit?.classList.contains("hidden"))) {
+        document.addEventListener("keydown", (e) => {
+            if (
+                e.key === "Escape" &&
+                !$taskFormEdit?.classList.contains("hidden")
+            ) {
                 this.closeEditForm();
             }
-        })
-
+        });
 
         if ($taskFormEdit) {
-            $taskFormEdit.addEventListener('submit', e => {
+            $taskFormEdit.addEventListener("submit", (e) => {
                 e.preventDefault();
-                this.submitEdition(dataId)
+                this.submitEdition(dataId);
                 dataId = 0;
-            })
+            });
         }
     }
 
-    submitEdition(dataId: number ) {
+    submitEdition(dataId: number) {
         const taskToEdit = this.plannedTasks[dataId];
         taskToEdit.name = $nameInputEdit.value;
         taskToEdit.description = $descInputEdit.value;
         taskToEdit.plannedDate = $dateInputEdit.value;
 
-
-        this.plannedTasks[dataId] = new Task(taskToEdit.name, taskToEdit.description, taskToEdit.plannedDate);
+        this.plannedTasks[dataId] = new Task(
+            taskToEdit.name,
+            taskToEdit.description,
+            taskToEdit.plannedDate
+        );
         this.updateTasksList();
 
-
         this.closeEditForm();
-    };
+    }
 
     showEditForm() {
-        $taskFormEdit?.classList.remove('hidden');
-        $taskFormEdit?.classList.add('fade-in');
+        $taskFormEdit?.classList.remove("hidden");
+        $taskFormEdit?.classList.add("fade-in");
 
-        $overlay?.classList.remove('hidden');
-        $overlay?.classList.add('fade-in');
+        $overlay?.classList.remove("hidden");
+        $overlay?.classList.add("fade-in");
     }
 
     closeEditForm() {
-        $taskFormEdit?.classList.add('hidden');
-        $overlay?.classList.add('hidden');
+        $taskFormEdit?.classList.add("hidden");
+        $overlay?.classList.add("hidden");
     }
-
-
-
 }
 
-const app = new App;
-
-
-
+const app = new App();
